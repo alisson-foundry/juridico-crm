@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: juridico
+      POSTGRES_PASSWORD: juridico123
+      POSTGRES_DB: juridico_crm
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://juridico:juridico123@postgres:5432/juridico_crm
+      JWT_SECRET: super_secret_jwt_key_change_in_production
+      PORT: 3001
+      NODE_ENV: production
+    depends_on:
+      - postgres
+    volumes:
+      - uploads_data:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '5173:80'
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  uploads_data:
