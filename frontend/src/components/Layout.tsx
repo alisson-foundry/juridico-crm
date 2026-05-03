@@ -8,6 +8,7 @@ import {
   Scale,
   Menu,
   X,
+  TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import NotificationBell from './NotificationBell';
@@ -25,6 +26,7 @@ export default function Layout() {
   const navItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/clients', label: 'Clientes', icon: Briefcase },
+    { to: '/finance', label: 'Financeiro', icon: TrendingUp },
     ...(user?.role === 'ADMIN' ? [{ to: '/users', label: 'Usuários', icon: Users }] : []),
   ];
 
