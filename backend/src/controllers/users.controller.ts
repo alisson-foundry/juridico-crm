@@ -49,7 +49,32 @@ export const update = async (req: AuthRequest, res: Response) => {
 
 export const remove = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  if (id === req.user!.userId) return res.status(400).json({ message: 'Não é possível excluir seu próprio usuário.' });
-  await prisma.user.update({ where: { id }, data: { active: false } });
+
+  if (id === req.user!.userId)
+    return res.status(400).json({ message: 'Não é possível excluir seu próprio usuário.' });
+
+  // Block if user owns any business records
+  const [clientCount, activityCount, contractCount] = await Promise.all([
+    prisma.client.count({ where: { createdById: id } }),
+    prisma.activity.count({ where: { createdById: id } }),
+    prisma.contract.count({ where: { createdById: id } }),
+  ]);
+
+  const total = clientCount + activityCount + contractCount;
+  if (total > 0) {
+    const parts: string[] = [];
+    if (clientCount > 0) parts.push(`${clientCount} cliente(s)`);
+    if (activityCount > 0) parts.push(`${activityCount} atividade(s)`);
+    if (contractCount > 0) parts.push(`${contractCount} contrato(s)`);
+    return res.status(409).json({
+      message: `Não é possível excluir: este usuário possui ${parts.join(', ')} vinculado(s). Reatribua-os antes de excluir.`,
+    });
+  }
+
+  // Remove audit logs and notifications first (no cascade in schema)
+  await prisma.auditLog.deleteMany({ where: { userId: id } });
+  await prisma.notification.deleteMany({ where: { userId: id } });
+  await prisma.user.delete({ where: { id } });
+
   return res.status(204).send();
 };
