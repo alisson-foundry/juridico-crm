@@ -11,6 +11,13 @@ export async function createAuditLog(
   activityId?: string,
 ) {
   await prisma.auditLog.create({
-    data: { userId, action, entity, entityId, changes, activityId },
+    data: {
+      userId,
+      action,
+      entity,
+      entityId,
+      changes: changes || undefined,
+      activityId,
+    },
   });
 }

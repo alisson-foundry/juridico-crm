@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  crm-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: juridico
+      POSTGRES_PASSWORD: juridico123
+      POSTGRES_DB: juridico_crm
+    volumes:
+      - crm_db_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U juridico -d juridico_crm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  crm-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://juridico:juridico123@crm-db:5432/juridico_crm
+      JWT_SECRET: jur1d1c0_crm_secret_key_ipacio_cavalcante_2025
+      PORT: 3001
+      NODE_ENV: production
+      UPLOAD_DIR: /app/uploads
+    depends_on:
+      crm-db:
+        condition: service_healthy
+    volumes:
+      - crm_uploads:/app/uploads
+    restart: always
+
+  crm-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8090:80"
+    depends_on:
+      - crm-backend
+    restart: always
+
+volumes:
+  crm_db_data:
+  crm_uploads:

@@ -104,7 +104,7 @@ model AuditLog {
   changes    Json?
   createdAt  DateTime @default(now())
 
-  user       User     @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
   userId     String
 
   activity   Activity? @relation(fields: [activityId], references: [id])
