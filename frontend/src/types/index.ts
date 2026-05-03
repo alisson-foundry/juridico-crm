@@ -26,6 +26,7 @@ export interface Client {
   createdBy?: { name: string };
   _count?: { activities: number };
   activities?: Activity[];
+  contracts?: Contract[];
 }
 
 export interface Activity {
@@ -67,4 +68,38 @@ export interface AuditLog {
   changes?: Record<string, unknown>;
   createdAt: string;
   user: { name: string };
+}
+
+// ─── Financial module ────────────────────────────────────────────────────────
+export type PaymentType = 'LUMP_SUM' | 'INSTALLMENT';
+export type PaymentMethod = 'PIX' | 'BOLETO' | 'CARD' | 'TRANSFER';
+export type ContractStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export type InstallmentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+
+export interface Installment {
+  id: string;
+  number: number;
+  value: number;
+  dueDate: string;
+  status: InstallmentStatus;
+  paidAt?: string;
+  paidWith?: PaymentMethod;
+  receiptPath?: string;
+  receiptName?: string;
+  notes?: string;
+  contractId: string;
+}
+
+export interface Contract {
+  id: string;
+  totalValue: number;
+  paymentType: PaymentType;
+  paymentMethod: PaymentMethod;
+  startDate: string;
+  notes?: string;
+  status: ContractStatus;
+  createdAt: string;
+  clientId: string;
+  createdBy?: { name: string };
+  installments: Installment[];
 }

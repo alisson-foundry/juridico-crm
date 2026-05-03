@@ -38,6 +38,7 @@ model User {
 
   clients       Client[]
   activities    Activity[]
+  contracts     Contract[]
   auditLogs     AuditLog[]
   notifications Notification[]
 }
@@ -60,6 +61,7 @@ model Client {
   createdById String
 
   activities Activity[]
+  contracts  Contract[]
 }
 
 model Activity {
@@ -81,6 +83,69 @@ model Activity {
   files         File[]
   auditLogs     AuditLog[]
   notifications Notification[]
+}
+
+enum PaymentType {
+  LUMP_SUM
+  INSTALLMENT
+}
+
+enum PaymentMethod {
+  PIX
+  BOLETO
+  CARD
+  TRANSFER
+}
+
+enum ContractStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum InstallmentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Contract {
+  id            String         @id @default(cuid())
+  totalValue    Float
+  paymentType   PaymentType
+  paymentMethod PaymentMethod
+  startDate     DateTime
+  notes         String?
+  status        ContractStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId      String
+
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdById   String
+
+  installments  Installment[]
+}
+
+model Installment {
+  id          String            @id @default(cuid())
+  number      Int
+  value       Float
+  dueDate     DateTime
+  status      InstallmentStatus @default(PENDING)
+  paidAt      DateTime?
+  paidWith    PaymentMethod?
+  receiptPath String?
+  receiptName String?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contractId  String
 }
 
 model File {

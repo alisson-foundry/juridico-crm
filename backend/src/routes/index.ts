@@ -5,6 +5,7 @@ import activityRoutes from './activities';
 import fileRoutes from './files';
 import userRoutes from './users';
 import notificationRoutes from './notifications';
+import contractRoutes from './contracts';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/', activityRoutes);
 router.use('/files', fileRoutes);
 router.use('/users', userRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/', contractRoutes);
 
 export default router;
