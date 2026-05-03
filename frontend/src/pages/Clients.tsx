@@ -11,21 +11,35 @@ import ClientForm from '../components/ClientForm';
 
 function ActionMenu({ client, onDelete }: { client: Client; onDelete: (c: Client) => void }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        btnRef.current && !btnRef.current.contains(e.target as Node)
+      ) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  const handleOpen = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+    }
+    setOpen((o) => !o);
+  };
+
   return (
-    <div ref={ref} className="relative">
+    <div>
       <button
-        onClick={() => setOpen((o) => !o)}
+        ref={btnRef}
+        onClick={handleOpen}
         className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
         title="Ações"
       >
@@ -33,7 +47,11 @@ function ActionMenu({ client, onDelete }: { client: Client; onDelete: (c: Client
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-10 py-1 text-sm">
+        <div
+          ref={menuRef}
+          style={{ top: pos.top, right: pos.right }}
+          className="fixed w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1 text-sm"
+        >
           <button
             onClick={() => { setOpen(false); navigate(`/clients/${client.id}`); }}
             className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
