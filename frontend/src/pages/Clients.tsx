@@ -1,13 +1,61 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Trash2, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Search, Filter, Trash2, Eye, MoreHorizontal } from 'lucide-react';
 import api from '../services/api';
 import { Client, ClientStatus } from '../types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import ClientForm from '../components/ClientForm';
+
+function ActionMenu({ client, onDelete }: { client: Client; onDelete: (c: Client) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+        title="Ações"
+      >
+        <MoreHorizontal size={16} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-8 w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-10 py-1 text-sm">
+          <button
+            onClick={() => { setOpen(false); navigate(`/clients/${client.id}`); }}
+            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Eye size={14} className="text-navy-900" />
+            Ver detalhes
+          </button>
+
+          <div className="my-1 border-t border-gray-100" />
+
+          <button
+            onClick={() => { setOpen(false); onDelete(client); }}
+            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} />
+            Excluir cliente
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const statusLabel: Record<ClientStatus, string> = {
   ACTIVE: 'Ativo',
@@ -137,21 +185,8 @@ export default function Clients() {
                       <span className="text-sm font-semibold text-navy-900">{c._count?.activities ?? 0}</span>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          to={`/clients/${c.id}`}
-                          className="p-1.5 rounded hover:bg-navy-50 text-navy-900"
-                          title="Ver detalhes"
-                        >
-                          <Eye size={15} />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(c)}
-                          className="p-1.5 rounded hover:bg-red-50 text-red-500"
-                          title="Excluir"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+                        <ActionMenu client={c} onDelete={handleDelete} />
                       </div>
                     </td>
                   </tr>
