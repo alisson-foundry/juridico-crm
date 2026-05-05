@@ -2,6 +2,7 @@ import { useState, FormEvent, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Upload, FileText, Trash2, Download, CheckCircle } from 'lucide-react';
 import api from '../services/api';
+import { downloadFile } from '../services/download';
 import { Activity, ActivityStatus } from '../types';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -227,15 +228,14 @@ export default function ActivityModal({ clientId, activity, onClose }: Props) {
                     <FileText size={14} className="text-navy-900 flex-shrink-0" />
                     <span className="flex-1 truncate text-gray-700">{f.originalName}</span>
                     <span className="text-gray-400 flex-shrink-0">{formatSize(f.size)}</span>
-                    <a
-                      href={`/api/files/${f.id}/download`}
+                    <button
+                      type="button"
+                      onClick={() => downloadFile(`/files/${f.id}/download`, f.originalName)}
                       className="p-1 hover:bg-navy-50 rounded text-navy-900"
                       title="Download"
-                      target="_blank"
-                      rel="noreferrer"
                     >
                       <Download size={13} />
-                    </a>
+                    </button>
                     <button
                       type="button"
                       onClick={() => deleteFile.mutate(f.id)}

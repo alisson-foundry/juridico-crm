@@ -24,6 +24,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import api from '../services/api';
+import { downloadFile } from '../services/download';
 import {
   Client,
   Activity,
@@ -264,16 +265,14 @@ function ContractCard({
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {inst.receiptName && (
-                    <a
-                      href={`/api/installments/${inst.id}/receipt`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); downloadFile(`/installments/${inst.id}/receipt`, inst.receiptName!); }}
                       className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Baixar comprovante"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       <Download size={14} />
-                    </a>
+                    </button>
                   )}
                   {(inst.status === 'PENDING' || inst.status === 'OVERDUE') && (
                     <button
@@ -578,17 +577,16 @@ export default function ClientDetail() {
                       {activity.files.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {activity.files.map((f) => (
-                            <a
+                            <button
                               key={f.id}
-                              href={`/api/files/${f.id}/download`}
-                              target="_blank"
-                              rel="noreferrer"
+                              type="button"
+                              onClick={() => downloadFile(`/files/${f.id}/download`, f.originalName)}
                               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-navy-900 hover:border-navy-900 transition-colors"
                             >
                               <FileText size={12} />
                               <span className="max-w-[120px] truncate">{f.originalName}</span>
                               <Download size={11} className="text-gray-400" />
-                            </a>
+                            </button>
                           ))}
                         </div>
                       )}
